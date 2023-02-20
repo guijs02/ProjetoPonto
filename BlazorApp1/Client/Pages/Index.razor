@@ -1,0 +1,117 @@
+﻿@using BlazorApp1.Client.Service.Interfaces;
+@using BlazorApp1.Server;
+@using MatBlazor
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Calendars
+@using System.Text.Json;
+@using Syncfusion.Blazor.Popups
+@using System.Text.Json.Nodes;
+@using Syncfusion.Blazor.Notifications;
+@page "/listCartaoPonto"
+
+@inject HttpClient _http
+
+@inject NavigationManager _navigation
+@inject ICartaoPontoService _cartaoPonto
+
+<div>
+    <button style="align-items:center;" type="button" class="btn btn-success" data-toggle="modal" title="Adicionar" data-target="" @onclick="@Open">
+        Adicionar
+    </button>
+</div>
+@if (OnInitializedCompleted)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Deletar</th>
+                <th>Excluir</th>
+                <th>Entrada 1</th>
+                <th>Saida 1</th>
+                <th>Entrada 2</th>
+                <th>Saida 2</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cartao in ListCartaoPonto)
+            {
+                <tr>
+                    <td><button class="btn btn-danger" @onclick="@(() => Delete(cartao.Id) )">Deletar</button></td>
+                    <td><button class="btn btn-primary" @onclick="@(() => GetById(cartao.Id) )">Editar</button></td>
+                    <td>@cartao.Entrada1</td>
+                    <td>@cartao.Saida1</td>
+                    <td>@cartao.Entrada2</td>
+                    <td>@cartao.Saida2</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <h1>Carregando...</h1>
+}
+
+@if (HabilitaModal)
+{
+    <CadCartaoPonto cartaoPontoObj="@cartaoPonto"
+                FromChildSubmit="@Submit"
+                modalDisplay="@ModalDisplay"
+                DisplayModalChanged="@((modaldisplay) => this.ModalDisplay = modaldisplay)">
+    </CadCartaoPonto>
+}
+
+@code {
+    List<CartaoPonto> ListCartaoPonto { get; set; }
+    SfGrid<CartaoPonto> SfGridCartaoPonto { get; set; }
+    public bool HabilitaModal { get; set; } = false;
+    public bool OnInitializedCompleted { get; set; }
+    public CartaoPonto cartaoPonto { get; set; }
+    public string? ModalDisplay { get; set; }
+    public bool ViewToast { get; set; }
+    SfToast ToastObj = new();
+    private const string ToastContent = "Editado/Adicionado com Sucesso";
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarDados();
+        base.OnInitialized();
+        OnInitializedCompleted = true;
+        StateHasChanged();
+
+    }
+    private async Task Submit()
+    {
+        HabilitaModal = false;
+         await CarregarDados();
+        StateHasChanged();
+    }
+    public async Task CarregarDados()
+    {
+        ListCartaoPonto = await _cartaoPonto.GetAllCartaoPonto();
+
+    }
+    private void Open()
+    {
+        cartaoPonto = new();
+        ModalDisplay = "block";
+        HabilitaModal = true;
+        StateHasChanged();
+
+    }
+
+    public async Task Delete(int id)
+    {
+        await _cartaoPonto.Delete(id);
+        await CarregarDados();
+
+    }
+
+    public async Task GetById(int id)
+    {
+        cartaoPonto = await _cartaoPonto.GetByIdCartaoPonto(id);
+        ModalDisplay = "block";
+        HabilitaModal = true;
+    }
+
+}

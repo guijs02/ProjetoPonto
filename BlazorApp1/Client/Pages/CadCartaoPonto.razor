@@ -1,0 +1,116 @@
+﻿@page "/cartaoponto"
+
+@using BlazorApp1.Server;
+@using System.Text.Json;
+@using BlazorApp1.Client.Service.Interfaces;
+@using MatBlazor
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.Popups
+
+@inject HttpClient _http
+@inject NavigationManager _navigation
+@inject ICartaoPontoService _cartaoPonto
+
+@inject IJSRuntime jsRuntime
+
+
+<div class="modal" tabindex="-1" role="dialog" style="display:@modalDisplay; overflow-y: auto;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cartão Ponto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Salvar">
+                    <span aria-hidden="true" @onclick="@(Close)">X</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@cartaoPontoObj">
+                    <div class="form-group">
+                        <div>
+                            <label>Entrada 1</label>
+                            <SfDateTimePicker TValue="DateTime?" Step=60 Format="HH:mm" @bind-Value="@cartaoPontoObj.Entrada1"></SfDateTimePicker>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="form-group">
+                        <div>
+                            <label>Saida 1</label>
+                            <SfTimePicker TValue="DateTime?" Step=60 Format="HH:mm" @bind-Value="cartaoPontoObj.Saida1"></SfTimePicker>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="form-group">
+                        <div>
+                            <label>Entrada 2</label>
+                            <SfTimePicker TValue="DateTime?" Step=60 Format="HH:mm" @bind-Value="cartaoPontoObj.Entrada2"></SfTimePicker>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="form-group">
+                        <div>
+                            <label>Saida 2</label>
+                            <SfTimePicker TValue="DateTime?" Step=60 Format="HH:mm" @bind-Value="cartaoPontoObj.Saida2"></SfTimePicker>
+                        </div>
+
+                    </div>
+                    <br />
+                    <br />
+                    <button class="btn btn-success" @onclick="@Salvar">Salvar</button>
+                </EditForm>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public CartaoPonto cartaoPontoObj { get; set; }
+
+    public bool OnInitializedCompleted { get; set; } = false;
+
+    [Parameter] public string modalDisplay { get; set; }
+
+    [Parameter] public EventCallback<string> DisplayModalChanged { get; set; }
+
+    [Parameter] public EventCallback FromChildSubmit { get; set; }
+
+
+    protected override Task OnInitializedAsync()
+    {
+        if (cartaoPontoObj.Id == 0)
+        {
+            cartaoPontoObj = new();
+        }
+        OnInitializedCompleted = true;
+        return base.OnInitializedAsync();
+    }
+
+    public async Task Salvar()
+    {
+        bool result;
+        if (cartaoPontoObj.Id == 0)
+        {
+            var content = await _cartaoPonto.Create(cartaoPontoObj);
+        }
+        else
+        {
+            result = await _cartaoPonto.Edit(cartaoPontoObj);
+
+        }
+
+        await FromChildSubmit.InvokeAsync();
+        cartaoPontoObj = new();
+        //dfdfdf
+
+    }
+    private void Close()
+    {
+
+        modalDisplay = "none";
+        DisplayModalChanged.InvokeAsync(modalDisplay);
+        StateHasChanged();
+    }
+}
