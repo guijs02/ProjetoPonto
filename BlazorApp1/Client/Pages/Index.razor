@@ -1,5 +1,6 @@
 ﻿@using BlazorApp1.Client.Service.Interfaces;
 @using BlazorApp1.Server;
+@using Blazorise
 @using MatBlazor
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Buttons
@@ -8,6 +9,7 @@
 @using Syncfusion.Blazor.Popups
 @using System.Text.Json.Nodes;
 @using Syncfusion.Blazor.Notifications;
+@using Microsoft.AspNetCore.Components.Forms
 @page "/listCartaoPonto"
 
 @inject HttpClient _http
@@ -20,6 +22,18 @@
         Adicionar
     </button>
 </div>
+
+@*<div class="form-group">
+    <button class="btn btn-success" @onclick="CalcularHorasTrabalhadas">Exibir Horas Trabalhadas</button>
+</div>*@
+
+<EditForm EditContext="editContext" Model="classFiltro">
+    <InputDate TValue="DateTime?" @bind-Value="classFiltro.filtro"></InputDate>
+</EditForm>
+
+@*<TimeEdit ></TimeEdit>*@
+<input type="datetime" @bind="@timeSpan"   />
+<button class="btn btn-success" @onclick="SearchDate">Filtrar</button>
 @if (OnInitializedCompleted)
 {
     <table class="table">
@@ -34,8 +48,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var cartao in ListCartaoPonto)
-            {
+            <Virtualize Context="cartao" Items="ListCartaoPonto">
                 <tr>
                     <td><button class="btn btn-danger" @onclick="@(() => Delete(cartao.Id) )">Deletar</button></td>
                     <td><button class="btn btn-primary" @onclick="@(() => GetById(cartao.Id) )">Editar</button></td>
@@ -44,7 +57,7 @@
                     <td>@cartao.Entrada2</td>
                     <td>@cartao.Saida2</td>
                 </tr>
-            }
+            </Virtualize>
         </tbody>
     </table>
 }
@@ -65,15 +78,20 @@ else
 @code {
     List<CartaoPonto> ListCartaoPonto { get; set; }
     SfGrid<CartaoPonto> SfGridCartaoPonto { get; set; }
-    public bool HabilitaModal { get; set; } = false;
-    public bool OnInitializedCompleted { get; set; }
+    private bool HabilitaModal { get; set; } = false;
+    private bool OnInitializedCompleted { get; set; }
     public CartaoPonto cartaoPonto { get; set; }
     public string? ModalDisplay { get; set; }
     public bool ViewToast { get; set; }
     SfToast ToastObj = new();
     private const string ToastContent = "Editado/Adicionado com Sucesso";
+    public TimeSpan timeSpan { get; set; }
+    private DateTime Filtro { get; set; }
+    public ClassFiltro classFiltro = new();
+    private EditContext? editContext;
     protected override async Task OnInitializedAsync()
     {
+
         await CarregarDados();
         base.OnInitialized();
         OnInitializedCompleted = true;
@@ -83,7 +101,7 @@ else
     private async Task Submit()
     {
         HabilitaModal = false;
-         await CarregarDados();
+        await CarregarDados();
         StateHasChanged();
     }
     public async Task CarregarDados()
@@ -113,5 +131,15 @@ else
         ModalDisplay = "block";
         HabilitaModal = true;
     }
-
+    public async Task SearchDate()
+    {
+        await CarregarDados();
+        ListCartaoPonto = ListCartaoPonto.Where(x => x.Entrada1.Value.Year == classFiltro.filtro.Value.Year).ToList();
+        if (ListCartaoPonto.Count == 0)
+            ListCartaoPonto.Clear();
+    }
+    public class ClassFiltro
+    {
+        public DateTime? filtro { get; set; }
+    }
 }

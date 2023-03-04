@@ -8,7 +8,7 @@
 @using Syncfusion.Blazor.Buttons
 @using Syncfusion.Blazor.Calendars
 @using Syncfusion.Blazor.Popups
-
+@using Blazorise
 @inject HttpClient _http
 @inject NavigationManager _navigation
 @inject ICartaoPontoService _cartaoPonto
@@ -30,7 +30,8 @@
                     <div class="form-group">
                         <div>
                             <label>Entrada 1</label>
-                            <SfDateTimePicker TValue="DateTime?" Step=60 Format="HH:mm" @bind-Value="@cartaoPontoObj.Entrada1"></SfDateTimePicker>
+                            <DateEdit  TValue="DateTime?" InputMode="DateInputMode.DateTime" @bind-Value="@cartaoPontoObj.Entrada1"/>
+                           @* <SfDateTimePicker TValue="DateTime?" Step=60 Format="HH:mm" ></SfDateTimePicker>*@
                         </div>
                     </div>
                     <br />
@@ -69,7 +70,7 @@
 
     [Parameter] public CartaoPonto cartaoPontoObj { get; set; }
 
-    public bool OnInitializedCompleted { get; set; } = false;
+    private bool OnInitializedCompleted { get; set; } = false;
 
     [Parameter] public string modalDisplay { get; set; }
 
@@ -77,34 +78,31 @@
 
     [Parameter] public EventCallback FromChildSubmit { get; set; }
 
-
     protected override Task OnInitializedAsync()
     {
-        if (cartaoPontoObj.Id == 0)
-        {
-            cartaoPontoObj = new();
-        }
         OnInitializedCompleted = true;
         return base.OnInitializedAsync();
     }
 
     public async Task Salvar()
     {
-        bool result;
+        bool result = false;
         if (cartaoPontoObj.Id == 0)
         {
             var content = await _cartaoPonto.Create(cartaoPontoObj);
+            result = (content is not null);
         }
         else
         {
             result = await _cartaoPonto.Edit(cartaoPontoObj);
 
         }
+        if (result)
+        {
+            await FromChildSubmit.InvokeAsync();
+            cartaoPontoObj = new();
 
-        await FromChildSubmit.InvokeAsync();
-        cartaoPontoObj = new();
-        //dfdfdf
-
+        }
     }
     private void Close()
     {

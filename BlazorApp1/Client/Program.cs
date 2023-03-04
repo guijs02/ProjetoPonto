@@ -1,6 +1,7 @@
 using BlazorApp1.Client;
 using BlazorApp1.Client.Service;
 using BlazorApp1.Client.Service.Interfaces;
+using Blazorise;
 using LocalizationServer.Shared;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -15,6 +16,9 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddSyncfusionBlazor(options => { options.IgnoreScriptIsolation = true; });
 builder.Services.AddSingleton(typeof(ISyncfusionStringLocalizer), typeof(SyncfusionLocalizer));
+
+
+builder.Services.AddBlazorise(options => options.Immediate = true);
 
 builder.Services.AddScoped<ICartaoPontoService, CartaoPontoService>();
 

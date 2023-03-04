@@ -61,10 +61,10 @@ namespace BlazorApp1.Server.Controllers
             {
                 var registro = _app.CartaoPonto.FirstOrDefault(x => x.Id == obj.Id);
 
-                registro.Entrada1 = obj.Entrada1;
-                registro.Entrada2 = obj.Entrada2;
                 registro.Saida1 = obj.Saida1;
                 registro.Saida2 = obj.Saida2;
+                registro.Entrada1 = obj.Entrada1;
+                registro.Entrada2 = obj.Entrada2;
 
                 _app.CartaoPonto.Update(registro);
                 await _app.SaveChangesAsync();
